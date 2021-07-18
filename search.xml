@@ -355,6 +355,8 @@
 <li>GO111MODULE=on 启用 go module，编译时会忽略 GOPATH 和 vendor 文件夹，只根据 go.mod下载依赖；</li>
 <li>GO111MODULE=auto（默认值），当项目在 GOPATH/src 目录之外，并且项目根目录有 go.mod 文件时，开启 go module。</li>
 </ul>
+<span id="more"></span>
+
 <p>Windows下开启GO111MODULE的命令为：</p>
 <figure class="highlight c"><table><tr><td class="code"><pre><span class="line"><span class="built_in">set</span> GO111MODULE=on 或者 <span class="built_in">set</span> GO111MODULE=<span class="keyword">auto</span></span><br></pre></td></tr></table></figure>
 

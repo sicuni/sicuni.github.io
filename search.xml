@@ -1,6 +1,180 @@
 <?xml version="1.0" encoding="utf-8"?>
 <search>
   <entry>
+    <title>Go Mod的使用</title>
+    <url>/2021/07/18/48/</url>
+    <content><![CDATA[<h1 id="go-mod-的使用"><a href="#go-mod-的使用" class="headerlink" title="go mod 的使用"></a>go mod 的使用</h1><h2 id="如何使用-Modules？"><a href="#如何使用-Modules？" class="headerlink" title="如何使用 Modules？"></a>如何使用 Modules？</h2><ol>
+<li>首先需要把 golang 升级到 1.11 版本以上（我使用的是go1.12.17版本）。</li>
+<li>设置 GO111MODULE。</li>
+</ol>
+<span id="more"></span>
+
+<h4 id="GO111MODULE"><a href="#GO111MODULE" class="headerlink" title="GO111MODULE"></a>GO111MODULE</h4><p>在Go语言 1.12 版本之前，要启用 go module 工具首先要设置环境变量 GO111MODULE，不过在Go语言 1.13 及以后的版本则不再需要设置环境变量。通过 GO111MODULE 可以开启或关闭 go module 工具。</p>
+<ul>
+<li>GO111MODULE=off 禁用 go module，编译时会从 GOPATH 和 vendor 文件夹中查找包；</li>
+<li>GO111MODULE=on 启用 go module，编译时会忽略 GOPATH 和 vendor 文件夹，只根据 go.mod下载依赖；</li>
+<li>GO111MODULE=auto（默认值），当项目在 GOPATH/src 目录之外，并且项目根目录有 go.mod 文件时，开启 go module。</li>
+</ul>
+<p>Windows下开启GO111MODULE的命令为：</p>
+<figure class="highlight c"><table><tr><td class="code"><pre><span class="line"><span class="built_in">set</span> GO111MODULE=on 或者 <span class="built_in">set</span> GO111MODULE=<span class="keyword">auto</span></span><br></pre></td></tr></table></figure>
+
+
+<p>MacOS或Linux下开启GO111MODULE的命令为：</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">export GO111MODULE=on 或者 export GO111MODULE=auto</span><br></pre></td></tr></table></figure>
+
+
+<p>在开启 GO111MODULE 之后就可以使用 go module 工具了，也就是说在以后的开发中就没有必要在 GOPATH 中创建项目了，并且还能够很好的管理项目依赖的第三方包信息。</p>
+<p><strong>常用的<code>go mod</code>命令如下表所示：</strong></p>
+<table>
+<thead>
+<tr>
+<th>命令</th>
+<th>作用</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>go mod download</td>
+<td>下载依赖包到本地（默认为 GOPATH/pkg/mod 目录）</td>
+</tr>
+<tr>
+<td>go mod edit</td>
+<td>编辑 go.mod 文件</td>
+</tr>
+<tr>
+<td>go mod graph</td>
+<td>打印模块依赖图</td>
+</tr>
+<tr>
+<td>go mod init</td>
+<td>初始化当前文件夹，创建 go.mod 文件</td>
+</tr>
+<tr>
+<td>go mod tidy</td>
+<td>增加缺少的包，删除无用的包</td>
+</tr>
+<tr>
+<td>go mod vendor</td>
+<td>将依赖复制到 vendor 目录下</td>
+</tr>
+<tr>
+<td>go mod verify</td>
+<td>校验依赖</td>
+</tr>
+<tr>
+<td>go mod why</td>
+<td>解释为什么需要依赖</td>
+</tr>
+</tbody></table>
+<h4 id="GOPROXY"><a href="#GOPROXY" class="headerlink" title="GOPROXY"></a>GOPROXY</h4><p>proxy 顾名思义就是代理服务器的意思。大家都知道，国内的网络有防火墙的存在，这导致有些Go语言的第三方包我们无法直接通过<code>go get</code>命令获取。GOPROXY 是Go语言官方提供的一种通过中间代理商来为用户提供包下载服务的方式。要使用 GOPROXY 只需要设置环境变量 GOPROXY 即可。</p>
+<p>目前公开的代理服务器的地址有：</p>
+<ul>
+<li>goproxy.io；</li>
+<li>goproxy.cn：（推荐）由国内的七牛云提供。</li>
+</ul>
+<p>Windows 下设置 GOPROXY 的命令为：</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">go env -w GOPROXY=https://goproxy.cn,direct</span><br></pre></td></tr></table></figure>
+
+
+<p>MacOS 或 Linux 下设置 GOPROXY 的命令为：</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">export GOPROXY=https://goproxy.cn</span><br></pre></td></tr></table></figure>
+
+
+<p>Go语言在 1.13 版本之后 GOPROXY 默认值为 <a href="https://proxy.golang.org/">https://proxy.golang.org</a>，在国内可能会存在下载慢或者无法访问的情况，所以十分建议大家将 GOPROXY 设置为国内的 goproxy.cn。</p>
+<h2 id="项目配置go-mod"><a href="#项目配置go-mod" class="headerlink" title="项目配置go mod"></a>项目配置go mod</h2><p>这里我使用的是Macos系统，首先执行下面命令，查看go mod功能是否开启</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">echo $GO111MODULE</span><br></pre></td></tr></table></figure>
+
+
+<p>如果值不是on建议运行<code>export GO111MODULE=on;</code>将go mod功能开启</p>
+<ol>
+<li>在使用go mod中，在项目中创建go.sum文件<code>go mod init</code></li>
+<li>在终端运行<code>go mod tidy</code>将需要的包下载到本地的GOPATH/pkg/mod目录下</li>
+<li>对于有一些源在国外无法直接访问下载，有这些问题时<code>dial tcp 216.239.37.1:443: i/o timeout</code>，解决方法有如下两种<ul>
+<li>科学上网：执行以下命令,执行前<strong>请将端口号替换为你自己的代理的端口号</strong><br><code>export http_proxy=http://localhost:8889</code><br><code>export https_proxy=http://localhost:8889</code></li>
+<li>使用国内的镜像源:<br><code>export GOPROXY=https://goproxy.io</code><br><code>export GOPROXY=https://goproxy.cn</code> <strong>推荐使用</strong></li>
+</ul>
+</li>
+<li>然后你就可以直接go build的了(这里你也许并不会构建成功、别担心，看错误信息一般都是一些本地的包或者公司内部一些代码库无法使用go mod自动下载)<br>这里就需要使用到go mod的replace了。在go.mod文件中需要replace</li>
+</ol>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">replace (</span><br><span class="line">	source latest =&gt; target latest</span><br><span class="line">)</span><br><span class="line"></span><br><span class="line">//如下</span><br><span class="line">replace (</span><br><span class="line">	demo/test v0.0.0 =&gt; ../../../test</span><br><span class="line">)</span><br></pre></td></tr></table></figure>
+
+<pre><code>  将你所有需要本地的包都replace。然后再次go build
+  对于本地的包的代码，如果没有使用go mod的话，就需要在终端执行以下命令 
+</code></pre>
+<p><code>export GO111MODULE=on</code><br><code>go mod init $projectName</code></p>
+<hr>
+<p>如果存在以下类似问题：</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">pkg/handlers/send_message.go:10:2: internal compiler error: conflicting package heights 20 and 10 for path &quot;github.com/golang/protobuf/proto&quot;</span><br></pre></td></tr></table></figure>
+
+<p>那么也是正常的，这是因为你下载依赖的包下载了最新的版本了出现的版本不兼容。这个时候你就需要到.         github.com中找到需要的包，以及找到需要使用的版本号或者是commit的ID还原到之前的版本。</p>
+<figure class="highlight sql"><table><tr><td class="code"><pre><span class="line">reuire (</span><br><span class="line">	github.com<span class="operator">/</span>golang<span class="operator">/</span>protobuf v1<span class="number">.4</span><span class="number">.3</span></span><br><span class="line">)</span><br><span class="line"></span><br><span class="line">可以修改为</span><br><span class="line">reuire (</span><br><span class="line">	github.com<span class="operator">/</span>golang<span class="operator">/</span>protobuf v1<span class="number">.3</span><span class="number">.3</span></span><br><span class="line">)</span><br></pre></td></tr></table></figure>
+
+<ol start="5">
+<li>然后就大功告成了！</li>
+</ol>
+]]></content>
+  </entry>
+  <entry>
+    <title>GMP调度模型</title>
+    <url>/2021/07/18/30/</url>
+    <content><![CDATA[<h1>GMP调度模型</h1>
+<p>Golang的一大特色就是Goroutine。Goroutine是Golang支持高并发的重要保障。Golang可以创建成千上万个Goroutine来处理任务，将这些Goroutine分配、负载、调度到处理器上采用的是G-M-P模型。</p>
+<span id="more"></span>
+<h2 id="前言">前言</h2>
+<p>随着科技的发展，机器配置越来越高。对了充分利用机器服务器的资源，并发编程变得越来越重要。在开始之前，需要简单的了解一下并发(concurrency)和并行(parallesim)的区别。</p>
+<p><strong>并发：<strong>有一个任务执行单元，从物理上就只能一个任务、一个任务地执行。在</strong>一段时间内</strong>有多个程序处于已启动运行到运行完毕之间。但任意时刻只有一个程序在处理机上运行。</p>
+<p>**并行：**有多个任务执行单元，从物理上就可以多个任务一起执行。</p>
+<p>**进程：**CPU在切换程序的时候，如果不保存上一个程序的状态（也就是我们常说的context–上下文），直接切换下一个程序，就会丢失上一个程序的一系列状态，于是引入了进程这个概念，用以划分好程序运行时所需要的资源。因此进程就是一个程序运行时候的所需要的基本资源单位（也可以说是程序运行的一个实体）。</p>
+<p>**线程：**CPU切换多个进程的时候，会花费不少的时间，因为切换进程需要切换到内核态，而每次调度需要内核态都需要读取用户态的数据，进程一旦多起来，CPU调度会消耗一大堆资源，因此引入了线程的概念，线程本身几乎不占有资源，他们共享进程里的资源，内核调度起来不会那么像进程切换那么耗费资源。</p>
+<p>**协程：**协程拥有自己的寄存器上下文和栈。协程调度切换时，将寄存器上下文和栈保存到其他地方，在切回来的时候，恢复先前保存的寄存器上下文和栈。因此，协程能保留上一次调用时的状态（即所有局部状态的一个特定组合），每次过程重入时，就相当于进入上一次调用的状态，换种说法：进入上一次离开时所处逻辑流的位置。线程和进程的操作是由程序触发系统接口，最后的执行者是系统；协程的操作执行者则是用户自身程序，goroutine也是协程。</p>
+<p>通常所说的并发编程，其实就是允许多个任务同时执(即在一段时间内执行多个任务，不需要同一时刻被执行)。在单核处理器上，通过多线程共享CPU时间片串行执行(并发非并行)。而并行需要依赖多核处理器。</p>
+<p>多线程或多进程是并行的基本条件，但单线程也可以用协程(coroutine)做到并发。简单将Goroutine归纳为协程并不合适，因为它运行时会创建多个线程来执行并发任务，且任务单元可被调度到其它线程执行。这更像是多线程和协程的结合体，能最大限度提升执行效率，发挥多核处理器能力。</p>
+<h2 id="线程、协程">线程、协程</h2>
+<p>为了更好理解Goroutine(可以说为<strong>轻量级线程</strong>)，现讲一下线程和协程的概念</p>
+<p><strong>线程（Thread）</strong>：有时被称为轻量级进程(Lightweight Process，LWP），是程序执行流的最小单元。一个标准的线程由线程ID，当前指令指针(PC），寄存器集合和堆栈组成。另外，线程是进程中的一个实体，是被系统独立调度和分派的基本单位，线程自己不拥有系统资源，只拥有一点儿在运行中必不可少的资源，但它可与同属一个进程的其它线程共享进程所拥有的全部资源。</p>
+<p>线程拥有自己独立的栈和共享的堆，共享堆，不共享栈，线程的切换一般也由操作系统调度。</p>
+<p><strong>协程（coroutine）</strong>：又称微线程与子例程（或者称为函数）一样，协程（coroutine）也是一种程序组件。相对子例程而言，协程更为一般和灵活，但在实践中使用没有子例程那样广泛。</p>
+<p>和线程类似，共享堆，不共享栈，协程的切换一般由程序员在代码中显式控制。它避免了上下文切换的额外耗费，兼顾了多线程的优点，简化了高并发程序的复杂。</p>
+<p>Goroutine和其他语言的协程（coroutine）在使用方式上类似，但从字面意义上来看不同（一个是Goroutine，一个是coroutine），再就是协程是一种协作任务控制机制，在最简单的意义上，协程不是并发的，而Goroutine支持并发的。因此Goroutine可以理解为一种Go语言的协程。同时它可以运行在一个或多个线程上。</p>
+<p>在Go语言中编写并发编程程序非常的简单，只需要加上Go 关键字即可。</p>
+<h2 id="并发模型">并发模型</h2>
+<p><strong>内核级线程</strong></p>
+<p>用户进程或者系统进程中的线程的创建、撤消、切换都是在内核空间中实现的，并由内核为其分配线程控制块进行管理。每个用户线程会被映射或者绑定到一个内核线程，形成一对一的线程对应关系，如下图所示，内核可以感知线程的存在，其调度是以线程为基本单位。</p>
+<img src="/images/pic/内核级线程模型.png" alt="内核级线程模型" style="zoom:50%;" />
+<p><strong>用户级线程</strong></p>
+<p>用户级线程仅存在于用户空间中，对于这种线程的创建、撤消、线程之间的同步与通信等，无须利用系统调用来实现，也同样无须内核的运行，而是通过中间系统（线程库）在用户空间中来完成。</p>
+<img src="/images/pic/用户级线程模型.png" alt="用户级线程模型" style="zoom:50%;" />
+<p><strong>两级调度模型</strong></p>
+<p>这种模型是介于用户级线程模型和内核级线程模型之间的一种线程模型。这种模型的实现非常复杂，和内核级线程模型类似，一个进程中可以对应多个内核级线程，但是进程中的线程不和内核线程一一对应；这种线程模型会先创建多个内核级线程，然后用自身的用户级线程去对应创建的多个内核级线程，自身的用户级线程需要本身程序去调度，内核级的线程交给操作系统内核去调度。</p>
+<p>M个用户线程对应N个系统线程，缺点增加了调度器的实现难度。</p>
+<p>Go语言的线程模型就是一种特殊的两级线程模型（GPM调度模型）。</p>
+<img src="/images/pic/两级线程模型.png" alt="两级线程模型" style="zoom:50%;" />
+<h2 id="调度模型简介">调度模型简介</h2>
+<p>Go语言虽然使用一个Go关键字即可实现并发编程，但Goroutine被调度到后端之后，具体的实现比较复杂。先看看调度器有哪几部分组成。</p>
+<ul>
+<li><strong>G</strong>：goroutine，go程序建立的用户线程。主要保存 goroutine 的运行时栈信息（stack结构体）以及 CPU 的一些寄存器的值（gobuf结构体），还有关联的M，全局队列中下个G等信息。</li>
+<li><strong>M</strong>：machine 一个<code>M</code>直接关联一个os内核线程，用于执行G。 <code>M</code>会优先从关联的<code>P</code>的本地队列中直接获取待执行的<code>G</code>，它保存了 M 自身使用 的栈信息、当 前正在 M 上执行的 G 信息、与之绑定的 P 信息。</li>
+<li><strong>P</strong>：processor 代表了<code>M</code>所需的上下文环境，也是处理用户级代码逻辑的处理器，可以看作一个局部调度器使go代码在一个线程上跑。</li>
+<li><strong>P列表</strong>：在创建程序的时候创建一个<code>P</code>列表， 最多有$GOMAXPROCS个，这环境变量可以通过操作系统中的环境变量设置，也可以通过Go程序中的runtime.GOMAXPROCS()函数设置，默认为处理器的核心数，它代表了真正的并发度。</li>
+<li><strong>M列表</strong>：当前操作系统分配到当前go程序的内核线程数，可以通过go语言中runtime/debug包中的SetMaxThreads函数设置。当有一个<code>M</code>阻塞，会有一个新的M被创建；当有一个<code>M</code>空闲，会被回收或睡眠。</li>
+<li><strong>P的本地队列</strong>：P维护一个runq_用来存放等待执行的goroutine，新创建的<code>G</code>会优先放在<code>P</code>的本地队列，当本地队列满（256G）时，会放入<code>G</code>的全局队列。</li>
+<li><strong>全局队列</strong>：如果<code>P</code>的本地队列已满，待执行的<code>G</code>就会放在全局队列中，<code>M</code>会先从关联的<code>P</code>的<strong>本地队列中获取</strong>待执行的<code>G</code>，没有的话，再到<strong>全局队列</strong>中获取；如果这里也没有了，就去<strong>其他<code>P</code>的本地队列</strong>中获取一些任务。</li>
+</ul>
+<p><strong>GMP的关系图如下：</strong></p>
+<img src="/images/pic/GMP关系.png" alt="GMP关系" style="zoom:50%;" />
+<p>以上这个图讲的是两个线程(内核线程)的情况。一个<strong>M</strong>会对应一个内核线程，一个<strong>M</strong>也会连接一个上下文<strong>P</strong>，一个上下文<strong>P</strong>相当于一个“处理器”，一个上下文连接一个或者多个Goroutine。为了运行goroutine，线程必须保存上下文。</p>
+<p><strong>GMP调度模型：</strong></p>
+<img src="/images/pic/GMP模型.png" alt="GMP模型" style="zoom:50%;" />
+<p>GMP调度流程大致如下：</p>
+<ul>
+<li>线程M想运行任务就需得获取 P，即与P关联。</li>
+<li>然从 P 的本地队列(LRQ)获取 G</li>
+<li>若LRQ中没有可运行的G，M 会尝试从全局队列(GRQ)拿一批G放到P的本地队列，</li>
+<li>若全局队列也未找到可运行的G时候，M会随机从其他 P 的本地队列偷一半放到自己 P 的本地队列。</li>
+<li>拿到可运行的G之后，M 运行 G，G 执行之后，M 会从 P 获取下一个 G，不断重复下去。</li>
+</ul>
+]]></content>
+  </entry>
+  <entry>
     <title>常用命令</title>
     <url>/2021/07/05/25/</url>
     <content><![CDATA[<h1 id="常用命令学习笔记"><a href="#常用命令学习笔记" class="headerlink" title="常用命令学习笔记"></a>常用命令学习笔记</h1><p>主要命令：<strong>grep find cat awk sed</strong></p>
@@ -278,181 +452,6 @@
 <p>使用sed命令后，输出结果如下：</p>
 <figure class="highlight shell"><table><tr><td class="code"><pre><span class="line"><span class="meta">$</span><span class="bash"> sed -e 4a\newline testfile <span class="comment">#使用sed 在第四行后添加新字符串</span></span>  </span><br><span class="line">HELLO LINUX! #testfile文件原有的内容  </span><br><span class="line">Linux is a free unix-type opterating system.  </span><br><span class="line">This is a linux testfile!  </span><br><span class="line">Linux test  </span><br><span class="line">newline </span><br></pre></td></tr></table></figure>
 
-]]></content>
-  </entry>
-  <entry>
-    <title>GMP调度模型</title>
-    <url>/2021/07/18/30/</url>
-    <content><![CDATA[<h1 id="GMP调度模型"><a href="#GMP调度模型" class="headerlink" title="GMP调度模型"></a>GMP调度模型</h1><p>Golang的一大特色就是Goroutine。Goroutine是Golang支持高并发的重要保障。Golang可以创建成千上万个Goroutine来处理任务，将这些Goroutine分配、负载、调度到处理器上采用的是G-M-P模型。</p>
-<span id="more"></span>
-
-<h2 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h2><p>随着科技的发展，机器配置越来越高。对了充分利用机器服务器的资源，并发编程变得越来越重要。在开始之前，需要简单的了解一下并发(concurrency)和并行(parallesim)的区别。</p>
-<p><strong>并发：</strong>有一个任务执行单元，从物理上就只能一个任务、一个任务地执行。在<strong>一段时间内</strong>有多个程序处于已启动运行到运行完毕之间。但任意时刻只有一个程序在处理机上运行。</p>
-<p><strong>并行：</strong>有多个任务执行单元，从物理上就可以多个任务一起执行。</p>
-<p><strong>进程：</strong>CPU在切换程序的时候，如果不保存上一个程序的状态（也就是我们常说的context–上下文），直接切换下一个程序，就会丢失上一个程序的一系列状态，于是引入了进程这个概念，用以划分好程序运行时所需要的资源。因此进程就是一个程序运行时候的所需要的基本资源单位（也可以说是程序运行的一个实体）。</p>
-<p><strong>线程：</strong>CPU切换多个进程的时候，会花费不少的时间，因为切换进程需要切换到内核态，而每次调度需要内核态都需要读取用户态的数据，进程一旦多起来，CPU调度会消耗一大堆资源，因此引入了线程的概念，线程本身几乎不占有资源，他们共享进程里的资源，内核调度起来不会那么像进程切换那么耗费资源。</p>
-<p><strong>协程：</strong>协程拥有自己的寄存器上下文和栈。协程调度切换时，将寄存器上下文和栈保存到其他地方，在切回来的时候，恢复先前保存的寄存器上下文和栈。因此，协程能保留上一次调用时的状态（即所有局部状态的一个特定组合），每次过程重入时，就相当于进入上一次调用的状态，换种说法：进入上一次离开时所处逻辑流的位置。线程和进程的操作是由程序触发系统接口，最后的执行者是系统；协程的操作执行者则是用户自身程序，goroutine也是协程。</p>
-<p> 通常所说的并发编程，其实就是允许多个任务同时执(即在一段时间内执行多个任务，不需要同一时刻被执行)。在单核处理器上，通过多线程共享CPU时间片串行执行(并发非并行)。而并行需要依赖多核处理器。</p>
-<p>多线程或多进程是并行的基本条件，但单线程也可以用协程(coroutine)做到并发。简单将Goroutine归纳为协程并不合适，因为它运行时会创建多个线程来执行并发任务，且任务单元可被调度到其它线程执行。这更像是多线程和协程的结合体，能最大限度提升执行效率，发挥多核处理器能力。</p>
-<h2 id="线程、协程"><a href="#线程、协程" class="headerlink" title="线程、协程"></a>线程、协程</h2><p>为了更好理解Goroutine(可以说为<strong>轻量级线程</strong>)，现讲一下线程和协程的概念</p>
-<p><strong>线程（Thread）</strong>：有时被称为轻量级进程(Lightweight Process，LWP），是程序执行流的最小单元。一个标准的线程由线程ID，当前指令指针(PC），寄存器集合和堆栈组成。另外，线程是进程中的一个实体，是被系统独立调度和分派的基本单位，线程自己不拥有系统资源，只拥有一点儿在运行中必不可少的资源，但它可与同属一个进程的其它线程共享进程所拥有的全部资源。</p>
-<p>线程拥有自己独立的栈和共享的堆，共享堆，不共享栈，线程的切换一般也由操作系统调度。</p>
-<p><strong>协程（coroutine）</strong>：又称微线程与子例程（或者称为函数）一样，协程（coroutine）也是一种程序组件。相对子例程而言，协程更为一般和灵活，但在实践中使用没有子例程那样广泛。</p>
-<p>和线程类似，共享堆，不共享栈，协程的切换一般由程序员在代码中显式控制。它避免了上下文切换的额外耗费，兼顾了多线程的优点，简化了高并发程序的复杂。</p>
-<p>Goroutine和其他语言的协程（coroutine）在使用方式上类似，但从字面意义上来看不同（一个是Goroutine，一个是coroutine），再就是协程是一种协作任务控制机制，在最简单的意义上，协程不是并发的，而Goroutine支持并发的。因此Goroutine可以理解为一种Go语言的协程。同时它可以运行在一个或多个线程上。</p>
-<p>在Go语言中编写并发编程程序非常的简单，只需要加上Go 关键字即可。</p>
-<h2 id="并发模型"><a href="#并发模型" class="headerlink" title="并发模型"></a>并发模型</h2><p><strong>内核级线程</strong></p>
-<p>用户进程或者系统进程中的线程的创建、撤消、切换都是在内核空间中实现的，并由内核为其分配线程控制块进行管理。每个用户线程会被映射或者绑定到一个内核线程，形成一对一的线程对应关系，如下图所示，内核可以感知线程的存在，其调度是以线程为基本单位。</p>
-<img src="./../../../../images/pic/内核级线程模型.png" alt="内核级线程模型" style="zoom:50%;" />
-
-<p><strong>用户级线程</strong></p>
-<p>用户级线程仅存在于用户空间中，对于这种线程的创建、撤消、线程之间的同步与通信等，无须利用系统调用来实现，也同样无须内核的运行，而是通过中间系统（线程库）在用户空间中来完成。</p>
-<img src="./../../../../images/pic/用户级线程模型.png" alt="用户级线程模型" style="zoom:50%;" />
-
-<p><strong>两级调度模型</strong></p>
-<p>这种模型是介于用户级线程模型和内核级线程模型之间的一种线程模型。这种模型的实现非常复杂，和内核级线程模型类似，一个进程中可以对应多个内核级线程，但是进程中的线程不和内核线程一一对应；这种线程模型会先创建多个内核级线程，然后用自身的用户级线程去对应创建的多个内核级线程，自身的用户级线程需要本身程序去调度，内核级的线程交给操作系统内核去调度。</p>
-<p>M个用户线程对应N个系统线程，缺点增加了调度器的实现难度。</p>
-<p>Go语言的线程模型就是一种特殊的两级线程模型（GPM调度模型）。</p>
-<img src="./../../../../images/pic/两级线程模型.png" alt="两级线程模型" style="zoom:50%;" />
-
-<h2 id="调度模型简介"><a href="#调度模型简介" class="headerlink" title="调度模型简介"></a>调度模型简介</h2><p>Go语言虽然使用一个Go关键字即可实现并发编程，但Goroutine被调度到后端之后，具体的实现比较复杂。先看看调度器有哪几部分组成。</p>
-<ul>
-<li><strong>G</strong>：goroutine，go程序建立的用户线程。主要保存 goroutine 的运行时栈信息（stack结构体）以及 CPU 的一些寄存器的值（gobuf结构体），还有关联的M，全局队列中下个G等信息。</li>
-<li><strong>M</strong>：machine 一个<code>M</code>直接关联一个os内核线程，用于执行G。 <code>M</code>会优先从关联的<code>P</code>的本地队列中直接获取待执行的<code>G</code>，它保存了 M 自身使用 的栈信息、当 前正在 M 上执行的 G 信息、与之绑定的 P 信息。</li>
-<li><strong>P</strong>：processor 代表了<code>M</code>所需的上下文环境，也是处理用户级代码逻辑的处理器，可以看作一个局部调度器使go代码在一个线程上跑。</li>
-<li><strong>P列表</strong>：在创建程序的时候创建一个<code>P</code>列表， 最多有$GOMAXPROCS个，这环境变量可以通过操作系统中的环境变量设置，也可以通过Go程序中的runtime.GOMAXPROCS()函数设置，默认为处理器的核心数，它代表了真正的并发度。</li>
-<li><strong>M列表</strong>：当前操作系统分配到当前go程序的内核线程数，可以通过go语言中runtime/debug包中的SetMaxThreads函数设置。当有一个<code>M</code>阻塞，会有一个新的M被创建；当有一个<code>M</code>空闲，会被回收或睡眠。</li>
-<li><strong>P的本地队列</strong>：P维护一个runq_用来存放等待执行的goroutine，新创建的<code>G</code>会优先放在<code>P</code>的本地队列，当本地队列满（256G）时，会放入<code>G</code>的全局队列。</li>
-<li><strong>全局队列</strong>：如果<code>P</code>的本地队列已满，待执行的<code>G</code>就会放在全局队列中，<code>M</code>会先从关联的<code>P</code>的<strong>本地队列中获取</strong>待执行的<code>G</code>，没有的话，再到<strong>全局队列</strong>中获取；如果这里也没有了，就去<strong>其他<code>P</code>的本地队列</strong>中获取一些任务。</li>
-</ul>
-<p><strong>GMP的关系图如下：</strong></p>
-<img src="./../../../../images/pic/GMP关系.png" alt="GMP关系" style="zoom:50%;" />
-
-<p>以上这个图讲的是两个线程(内核线程)的情况。一个<strong>M</strong>会对应一个内核线程，一个<strong>M</strong>也会连接一个上下文<strong>P</strong>，一个上下文<strong>P</strong>相当于一个“处理器”，一个上下文连接一个或者多个Goroutine。为了运行goroutine，线程必须保存上下文。</p>
-<p><strong>GMP调度模型：</strong></p>
-<img src="./../../../../images/pic/GMP模型.png" alt="GMP模型" style="zoom:50%;" />
-
-<p>GMP调度流程大致如下：</p>
-<ul>
-<li>线程M想运行任务就需得获取 P，即与P关联。</li>
-<li>然从 P 的本地队列(LRQ)获取 G</li>
-<li>若LRQ中没有可运行的G，M 会尝试从全局队列(GRQ)拿一批G放到P的本地队列，</li>
-<li>若全局队列也未找到可运行的G时候，M会随机从其他 P 的本地队列偷一半放到自己 P 的本地队列。</li>
-<li>拿到可运行的G之后，M 运行 G，G 执行之后，M 会从 P 获取下一个 G，不断重复下去。</li>
-</ul>
-]]></content>
-  </entry>
-  <entry>
-    <title>Go Mod的使用</title>
-    <url>/2021/07/18/48/</url>
-    <content><![CDATA[<h1 id="go-mod-的使用"><a href="#go-mod-的使用" class="headerlink" title="go mod 的使用"></a>go mod 的使用</h1><h2 id="如何使用-Modules？"><a href="#如何使用-Modules？" class="headerlink" title="如何使用 Modules？"></a>如何使用 Modules？</h2><ol>
-<li>首先需要把 golang 升级到 1.11 版本以上（我使用的是go1.12.17版本）。</li>
-<li>设置 GO111MODULE。</li>
-</ol>
-<span id="more"></span>
-
-<h4 id="GO111MODULE"><a href="#GO111MODULE" class="headerlink" title="GO111MODULE"></a>GO111MODULE</h4><p>在Go语言 1.12 版本之前，要启用 go module 工具首先要设置环境变量 GO111MODULE，不过在Go语言 1.13 及以后的版本则不再需要设置环境变量。通过 GO111MODULE 可以开启或关闭 go module 工具。</p>
-<ul>
-<li>GO111MODULE=off 禁用 go module，编译时会从 GOPATH 和 vendor 文件夹中查找包；</li>
-<li>GO111MODULE=on 启用 go module，编译时会忽略 GOPATH 和 vendor 文件夹，只根据 go.mod下载依赖；</li>
-<li>GO111MODULE=auto（默认值），当项目在 GOPATH/src 目录之外，并且项目根目录有 go.mod 文件时，开启 go module。</li>
-</ul>
-<p>Windows下开启GO111MODULE的命令为：</p>
-<figure class="highlight c"><table><tr><td class="code"><pre><span class="line"><span class="built_in">set</span> GO111MODULE=on 或者 <span class="built_in">set</span> GO111MODULE=<span class="keyword">auto</span></span><br></pre></td></tr></table></figure>
-
-
-<p>MacOS或Linux下开启GO111MODULE的命令为：</p>
-<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">export GO111MODULE=on 或者 export GO111MODULE=auto</span><br></pre></td></tr></table></figure>
-
-
-<p>在开启 GO111MODULE 之后就可以使用 go module 工具了，也就是说在以后的开发中就没有必要在 GOPATH 中创建项目了，并且还能够很好的管理项目依赖的第三方包信息。</p>
-<p><strong>常用的<code>go mod</code>命令如下表所示：</strong></p>
-<table>
-<thead>
-<tr>
-<th>命令</th>
-<th>作用</th>
-</tr>
-</thead>
-<tbody><tr>
-<td>go mod download</td>
-<td>下载依赖包到本地（默认为 GOPATH/pkg/mod 目录）</td>
-</tr>
-<tr>
-<td>go mod edit</td>
-<td>编辑 go.mod 文件</td>
-</tr>
-<tr>
-<td>go mod graph</td>
-<td>打印模块依赖图</td>
-</tr>
-<tr>
-<td>go mod init</td>
-<td>初始化当前文件夹，创建 go.mod 文件</td>
-</tr>
-<tr>
-<td>go mod tidy</td>
-<td>增加缺少的包，删除无用的包</td>
-</tr>
-<tr>
-<td>go mod vendor</td>
-<td>将依赖复制到 vendor 目录下</td>
-</tr>
-<tr>
-<td>go mod verify</td>
-<td>校验依赖</td>
-</tr>
-<tr>
-<td>go mod why</td>
-<td>解释为什么需要依赖</td>
-</tr>
-</tbody></table>
-<h4 id="GOPROXY"><a href="#GOPROXY" class="headerlink" title="GOPROXY"></a>GOPROXY</h4><p>proxy 顾名思义就是代理服务器的意思。大家都知道，国内的网络有防火墙的存在，这导致有些Go语言的第三方包我们无法直接通过<code>go get</code>命令获取。GOPROXY 是Go语言官方提供的一种通过中间代理商来为用户提供包下载服务的方式。要使用 GOPROXY 只需要设置环境变量 GOPROXY 即可。</p>
-<p>目前公开的代理服务器的地址有：</p>
-<ul>
-<li>goproxy.io；</li>
-<li>goproxy.cn：（推荐）由国内的七牛云提供。</li>
-</ul>
-<p>Windows 下设置 GOPROXY 的命令为：</p>
-<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">go env -w GOPROXY=https://goproxy.cn,direct</span><br></pre></td></tr></table></figure>
-
-
-<p>MacOS 或 Linux 下设置 GOPROXY 的命令为：</p>
-<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">export GOPROXY=https://goproxy.cn</span><br></pre></td></tr></table></figure>
-
-
-<p>Go语言在 1.13 版本之后 GOPROXY 默认值为 <a href="https://proxy.golang.org/">https://proxy.golang.org</a>，在国内可能会存在下载慢或者无法访问的情况，所以十分建议大家将 GOPROXY 设置为国内的 goproxy.cn。</p>
-<h2 id="项目配置go-mod"><a href="#项目配置go-mod" class="headerlink" title="项目配置go mod"></a>项目配置go mod</h2><p>这里我使用的是Macos系统，首先执行下面命令，查看go mod功能是否开启</p>
-<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">echo $GO111MODULE</span><br></pre></td></tr></table></figure>
-
-
-<p>如果值不是on建议运行<code>export GO111MODULE=on;</code>将go mod功能开启</p>
-<ol>
-<li>在使用go mod中，在项目中创建go.sum文件<code>go mod init</code></li>
-<li>在终端运行<code>go mod tidy</code>将需要的包下载到本地的GOPATH/pkg/mod目录下</li>
-<li>对于有一些源在国外无法直接访问下载，有这些问题时<code>dial tcp 216.239.37.1:443: i/o timeout</code>，解决方法有如下两种<ul>
-<li>科学上网：执行以下命令,执行前<strong>请将端口号替换为你自己的代理的端口号</strong><br><code>export http_proxy=http://localhost:8889</code><br><code>export https_proxy=http://localhost:8889</code></li>
-<li>使用国内的镜像源:<br><code>export GOPROXY=https://goproxy.io</code><br><code>export GOPROXY=https://goproxy.cn</code> <strong>推荐使用</strong></li>
-</ul>
-</li>
-<li>然后你就可以直接go build的了(这里你也许并不会构建成功、别担心，看错误信息一般都是一些本地的包或者公司内部一些代码库无法使用go mod自动下载)<br>这里就需要使用到go mod的replace了。在go.mod文件中需要replace</li>
-</ol>
-<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">replace (</span><br><span class="line">	source latest =&gt; target latest</span><br><span class="line">)</span><br><span class="line"></span><br><span class="line">//如下</span><br><span class="line">replace (</span><br><span class="line">	demo/test v0.0.0 =&gt; ../../../test</span><br><span class="line">)</span><br></pre></td></tr></table></figure>
-
-<pre><code>  将你所有需要本地的包都replace。然后再次go build
-  对于本地的包的代码，如果没有使用go mod的话，就需要在终端执行以下命令 
-</code></pre>
-<p><code>export GO111MODULE=on</code><br><code>go mod init $projectName</code></p>
-<hr>
-<p>如果存在以下类似问题：</p>
-<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">pkg/handlers/send_message.go:10:2: internal compiler error: conflicting package heights 20 and 10 for path &quot;github.com/golang/protobuf/proto&quot;</span><br></pre></td></tr></table></figure>
-
-<p>那么也是正常的，这是因为你下载依赖的包下载了最新的版本了出现的版本不兼容。这个时候你就需要到.         github.com中找到需要的包，以及找到需要使用的版本号或者是commit的ID还原到之前的版本。</p>
-<figure class="highlight sql"><table><tr><td class="code"><pre><span class="line">reuire (</span><br><span class="line">	github.com<span class="operator">/</span>golang<span class="operator">/</span>protobuf v1<span class="number">.4</span><span class="number">.3</span></span><br><span class="line">)</span><br><span class="line"></span><br><span class="line">可以修改为</span><br><span class="line">reuire (</span><br><span class="line">	github.com<span class="operator">/</span>golang<span class="operator">/</span>protobuf v1<span class="number">.3</span><span class="number">.3</span></span><br><span class="line">)</span><br></pre></td></tr></table></figure>
-
-<ol start="5">
-<li>然后就大功告成了！</li>
-</ol>
 ]]></content>
   </entry>
 </search>
